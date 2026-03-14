@@ -65,7 +65,7 @@ export async function injectProductsToSupabase(products: SourcedProduct[]) {
     } catch (error: unknown) {
       // 3. ISOLATED ERRORS: Strictly typed error handling without 'any'
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`❌ Batch ${Math.floor(i / BATCH_SIZE) + 1} Failed:`, errorMessage);
+      console.error('❌ Batch %d Failed:', Math.floor(i / BATCH_SIZE) + 1, errorMessage);
       totalFailed += batch.length;
     }
   }

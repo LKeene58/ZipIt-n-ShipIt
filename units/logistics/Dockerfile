@@ -10,8 +10,10 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the unit's code
+# ... existing setup ...
 COPY . .
 
-# Start the agent
+# Add this line here (Node images come with a non-root 'node' user built-in)
+USER node
+
 CMD ["npm", "start"]

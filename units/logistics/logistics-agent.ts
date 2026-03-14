@@ -70,8 +70,7 @@ class LogisticsAgent {
         await this.syncInventory();
       }
     } catch (error) {
-      console.error(`[${this.agentName}] CRITICAL ERROR in cycle:`, error);
-      this.logToOverseer(`Cycle Failure: ${error instanceof Error ? error.message : 'Unknown'}`);
+console.error('[%s] CRITICAL ERROR in cycle:', this.agentName, error);      this.logToOverseer(`Cycle Failure: ${error instanceof Error ? error.message : 'Unknown'}`);
     } finally {
       this.isRunning = false;
       setTimeout(() => this.runCycle(), POLLING_INTERVAL_MS);
@@ -197,7 +196,7 @@ class LogisticsAgent {
           // SECURITY PATCH 2: Scrub the API key out of the error logs just in case CJ echoes it
           const sanitizedError = errorText.replace(new RegExp(CJ_API_KEY, 'g'), '[REDACTED_API_KEY]');
           
-          console.error(`CJ API Rejected Order #${order.id}. Response: ${sanitizedError}`);
+          console.error('CJ API Rejected Order #%s. Response: %s', order.id, sanitizedError);
           
           await supabase.from('orders').update({ status: 'action_required' }).eq('id', order.id);
           this.logToOverseer(`URGENT: Order #${order.id} rejected. Reason: ${sanitizedError.substring(0, 100)}...`);
@@ -205,7 +204,7 @@ class LogisticsAgent {
 
         await sleep(500);
       } catch (err) {
-        console.error(`[${this.agentName}] Network/API failure on order #${order.id}:`, err);
+        console.error('[%s] Network/API failure on order #%s:', this.agentName, order.id, err);
         await supabase.from('orders').update({ status: 'pending' }).eq('id', order.id);
       }
     }

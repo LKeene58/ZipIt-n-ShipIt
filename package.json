@@ -13,7 +13,7 @@
   "dependencies": {
     "@stripe/stripe-js": "^8.8.0",
     "@supabase/ssr": "^0.7.0",
-    "@supabase/supabase-js": "^2.57.4",
+    "@supabase/supabase-js": "^2.99.1",
     "@vercel/analytics": "^1.6.1",
     "dotenv": "^17.3.1",
     "lucide-react": "^0.553.0",
