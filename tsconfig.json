@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "forceConsistentCasingInFileNames": true,
+    "target": "es2022", // UPGRADED FROM ES2017
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -22,7 +23,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@archive/*": ["_archive/*"],
-      "@services/*": ["src/services/*"]
+      "@services/*": ["src/services/*"],
+      "@units/*": ["./units/*"] // ADDED YOUR UNITS FOLDER
     }
   },
   "include": [

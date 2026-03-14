@@ -1,5 +1,4 @@
-import { Watchdog, StatementOfIntent } from '@/watchdog';
-
+import { Watchdog, StatementOfIntent } from '@units/security/watchdog';
 async function runTests() {
   console.log("🟢 STARTING WATCHDOG TESTS...\n");
 
