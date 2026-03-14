@@ -1,0 +1,16 @@
+name: Manual Vercel Deploy
+on:
+  push:
+    branches:
+      - main  # Or your specific deploy branch
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel Webhook
+        run: |
+          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+            echo "VERCEL_DEPLOY_HOOK is not set in GitHub Actions secrets."
+            exit 1
+          fi
+          curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"

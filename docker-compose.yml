@@ -1,0 +1,65 @@
+services:
+  # 1. THE BRAIN (The "Zipper" - Handles Auth, Cron, and Orchestration)
+  manager-ai:
+    build: ./manager
+    container_name: zip-manager
+    networks:
+      - zip-net
+    env_file: .env
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: always
+
+  # 2. SOURCING (The "Finder" - Uses CJ_API for products)
+  sourcing-unit:
+    build: ./units/sourcing
+    container_name: zip-sourcing
+    networks:
+      - zip-net
+    env_file: .env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CJ_API_KEY=${CJ_API_KEY}
+    restart: always
+
+  # 3. MARKETING (The "Seller" - Generates copy and SEO)
+  marketing-unit:
+    build: ./units/marketing
+    container_name: zip-marketing
+    networks:
+      - zip-net
+    env_file: .env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    restart: always
+
+  # 4. LOGISTICS (The "Shipper" - Handles fulfillment and Stripe)
+  logistics-unit:
+    build: ./units/logistics
+    container_name: zip-logistics
+    networks:
+      - zip-net
+    env_file: .env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+    restart: always
+
+  # 5. CUSTOMER SERVICE (The "Fixer" - Client communication)
+  support-unit:
+    build: ./units/support
+    container_name: zip-support
+    networks:
+      - zip-net
+    env_file: .env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    restart: always
+
+networks:
+  zip-net:
+    driver: bridge

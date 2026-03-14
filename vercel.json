@@ -1,0 +1,19 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Access-Control-Allow-Origin", "value": "https://www.zipitnshipit.com" }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/nightly-sourcing",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}

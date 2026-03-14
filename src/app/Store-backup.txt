@@ -1,0 +1,304 @@
+'use client';
+/**
+ * PROJECT: ZIP-IT 'N SHIP-IT
+ * FILE: src/app/Preview/page.tsx
+ * STATUS: GOLD STANDARD - EXPANDED
+ * FEATURES: Perfect 1/8th S-Overlap, Un-clipped 'N, Full Line Count, Peek Slider
+ */
+
+/* cSpell:disable */
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
+
+interface Product {
+  id: number;
+  name: string;
+  sale_price: number;
+  image_url: string;
+}
+
+function ProductCard({ product }: { product: Product }) {
+  // 1. DATA PARSING
+  const imageList = product.image_url 
+    ? product.image_url.split(', ').map((img: string) => img.startsWith('/') ? img : `/${img}`) 
+    : ['/file.svg'];
+  
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // 2. PEEK LOGIC
+  const prevIndex = (currentIndex - 1 + imageList.length) % imageList.length;
+  const nextIndex = (currentIndex + 1) % imageList.length;
+
+  const handleArrowClick = (e: React.MouseEvent, direction: 'next' | 'prev') => {
+    e.stopPropagation();
+    if (direction === 'next') {
+      setCurrentIndex((prev) => (prev + 1) % imageList.length);
+    } else {
+      setCurrentIndex((prev) => (prev - 1 + imageList.length) % imageList.length);
+    }
+  };
+
+  return (
+    <>
+      {/* MAIN CARD BOX */}
+      <div className="bg-[#0f0f0f] border border-white/5 p-5 rounded-2xl flex flex-col shadow-lg transition-transform duration-300 hover:-translate-y-1 z-10">
+        
+        {/* ENHANCED IMAGE VIEWER WITH CONSTANT PEEK PREVIEWS */}
+        <div className="relative h-64 mb-4 rounded-xl bg-black flex items-center justify-center group overflow-hidden">
+          
+          {/* LEFT PREVIEW (PEEK) */}
+          {imageList.length > 1 && (
+            <div className="absolute left-[-15%] w-[45%] h-[75%] opacity-50 blur-[2px] scale-90 pointer-events-none z-10 transition-all">
+              <Image 
+                src={imageList[prevIndex]} 
+                alt="Previous Peek" 
+                fill 
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-contain"
+              />
+            </div>
+          )}
+
+          {/* ACTIVE MAIN IMAGE */}
+          <div 
+            className="relative z-20 h-full w-[80%] flex items-center justify-center cursor-zoom-in"
+            onClick={() => setIsOpen(true)}
+          >
+            <div className="relative h-full w-full p-2 transition-transform duration-700 group-hover:scale-105">
+              <Image 
+                src={imageList[currentIndex]} 
+                alt={product.name} 
+                fill 
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-contain drop-shadow-2xl"
+                priority
+              />
+            </div>
+          </div>
+
+          {/* RIGHT PREVIEW (PEEK) */}
+          {imageList.length > 1 && (
+            <div className="absolute right-[-15%] w-[45%] h-[75%] opacity-50 blur-[2px] scale-90 pointer-events-none z-10 transition-all">
+              <Image 
+                src={imageList[nextIndex]} 
+                alt="Next Peek" 
+                fill 
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-contain"
+              />
+            </div>
+          )}
+          
+          {/* NAVIGATION BUTTONS */}
+          {imageList.length > 1 && (
+            <>
+              <button 
+                onClick={(e) => handleArrowClick(e, 'prev')} 
+                className="absolute left-2 z-40 w-10 h-10 rounded-full bg-cyan-500/20 text-white border border-cyan-400/50 flex items-center justify-center opacity-100 transition-all hover:bg-cyan-500 hover:text-black shadow-[0_0_10px_rgba(0,255,255,0.2)]"
+              >
+                ←
+              </button>
+              <button 
+                onClick={(e) => handleArrowClick(e, 'next')} 
+                className="absolute right-2 z-40 w-10 h-10 rounded-full bg-cyan-500/20 text-white border border-cyan-400/50 flex items-center justify-center opacity-100 transition-all hover:bg-cyan-500 hover:text-black shadow-[0_0_10px_rgba(0,255,255,0.2)]"
+              >
+                →
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* PRODUCT DETAILS */}
+        <div className="flex flex-col flex-grow">
+          <h2 className="text-white font-bold text-lg leading-tight mb-2 tracking-wide">
+            {product.name}
+          </h2>
+          <p className="text-white text-3xl font-bold mb-6">
+            ${product.sale_price}
+          </p>
+        </div>
+        
+        {/* CONVERSION BUTTON */}
+        <button className="w-full py-3 mt-auto bg-transparent border border-cyan-400/60 rounded-xl text-white font-bold tracking-widest uppercase hover:shadow-[0_0_15px_rgba(0,255,255,0.4)] transition-all">
+          Buy Now
+        </button>
+      </div>
+
+      {/* FULL-SCREEN OVERLAY (LIGHTBOX) */}
+      {isOpen && (
+        <div className="fixed inset-0 z-[9999] bg-black/98 backdrop-blur-3xl flex flex-col items-center justify-center p-4" onClick={() => setIsOpen(false)}>
+          <button 
+            className="absolute top-6 right-6 p-4 text-white/50 hover:text-white transition-colors" 
+            onClick={() => setIsOpen(false)}
+          >
+            <span className="text-5xl font-light">✕</span>
+          </button>
+          <div className="relative max-w-5xl w-full h-[80vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            <Image 
+              src={imageList[currentIndex]} 
+              alt="Expanded View" 
+              fill 
+              className="object-contain shadow-[0_0_60px_rgba(0,209,255,0.1)]"
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
+}  
+
+export default function Home() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/products?select=*`;
+        const response = await fetch(url, {
+          cache: 'no-store',
+          headers: {
+            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+          },
+        });
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setProducts(data);
+        }
+      } catch (err) {
+        console.error('Supabase Error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getProducts();
+  }, []);
+
+  return (
+    <div className="relative min-h-screen bg-[#020202] p-8 text-white overflow-hidden">
+      
+      {/* ANIMATED BACKGROUND */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex justify-center items-center">
+        <div className="absolute top-[-10%] left-[-10%] w-[80%] h-[80%] bg-emerald-500/30 rounded-full blur-[90px] mix-blend-screen animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[80%] h-[80%] bg-purple-600/30 rounded-full blur-[90px] mix-blend-screen animate-pulse" />
+      </div>
+
+      {/* MASTER BRANDING HEADER */}
+      <div className="relative z-10 text-center mb-20 mt-12">
+        <h1 className="text-6xl md:text-8xl lg:text-9xl font-black uppercase tracking-tighter mb-12 flex flex-wrap justify-center items-center">
+          
+          {/* ZIP-IT */}
+          <span className="relative inline-block" style={{ backgroundImage: 'linear-gradient(to bottom, #ffffff 10%, #00f2ff 45%, #0066ff 95%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 0 10px rgba(0, 242, 255, 0.5))' }}>
+            ZIP-IT
+          </span> 
+
+          {/* 'N (Perfect Center and Anti-Clip applied) */}
+          <span className="text-4xl md:text-6xl italic font-light mx-4 md:mx-6 px-2 relative z-50" style={{ backgroundImage: 'linear-gradient(to bottom, #ffffff, #00d1ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 0 5px rgba(0, 0, 0, 0.8))' }}>
+            &apos;N
+          </span> 
+          
+          {/* SHIP-IT WRAPPER */}
+          <span className="relative inline-block isolate">
+            <span className="relative block" style={{ backgroundImage: 'linear-gradient(to bottom, #ffffff 10%, #00f2ff 45%, #0066ff 95%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 0 10px rgba(0, 242, 255, 0.3))' }}>
+              SHIP-IT
+            </span>
+
+            {/* S-OVERLAP LINES: Pulled exactly 1/8th of an inch INTO the S (left-[4px] md:left-[8px]) */}
+            <span className="absolute top-[18%] bottom-[18%] left-[4px] md:left-[8px] w-[calc(100%+3rem)] md:w-[calc(100%+5rem)] flex flex-col justify-between pointer-events-none z-30" style={{ mixBlendMode: 'screen' }}>
+              
+              {/* LINE 1 */}
+              <span className="relative w-full h-[3px] md:h-[5px] bg-[#ff0000] shadow-[0_0_12px_#ff0000]">
+                <span className="absolute top-1/2 left-full -translate-y-1/2 w-0 h-0 border-y-[2px] md:border-y-[3px] border-y-transparent border-l-[10px] md:border-l-[18px] border-l-[#ff0000]"></span>
+              </span>
+              {/* LINE 2 */}
+              <span className="relative w-full h-[3px] md:h-[5px] bg-[#ff0000] shadow-[0_0_12px_#ff0000]">
+                <span className="absolute top-1/2 left-full -translate-y-1/2 w-0 h-0 border-y-[2px] md:border-y-[3px] border-y-transparent border-l-[10px] md:border-l-[18px] border-l-[#ff0000]"></span>
+              </span>
+              {/* LINE 3 */}
+              <span className="relative w-full h-[3px] md:h-[5px] bg-[#ff0000] shadow-[0_0_12px_#ff0000]">
+                <span className="absolute top-1/2 left-full -translate-y-1/2 w-0 h-0 border-y-[2px] md:border-y-[3px] border-y-transparent border-l-[10px] md:border-l-[18px] border-l-[#ff0000]"></span>
+              </span>
+              {/* LINE 4 */}
+              <span className="relative w-full h-[3px] md:h-[5px] bg-[#ff0000] shadow-[0_0_12px_#ff0000]">
+                <span className="absolute top-1/2 left-full -translate-y-1/2 w-0 h-0 border-y-[2px] md:border-y-[3px] border-y-transparent border-l-[10px] md:border-l-[18px] border-l-[#ff0000]"></span>
+              </span>
+              {/* LINE 5 */}
+              <span className="relative w-full h-[3px] md:h-[5px] bg-[#ff0000] shadow-[0_0_12px_#ff0000]">
+                <span className="absolute top-1/2 left-full -translate-y-1/2 w-0 h-0 border-y-[2px] md:border-y-[3px] border-y-transparent border-l-[10px] md:border-l-[18px] border-l-[#ff0000]"></span>
+              </span>
+
+            </span>
+          </span>
+        </h1>
+        
+        <div className="h-[2px] w-64 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto mb-10 shadow-[0_0_20px_rgba(0,242,255,0.6)]" />
+        <p className="text-cyan-400/70 font-mono tracking-[0.4em] uppercase text-xs">
+          A UGI Studios product
+        </p>
+      </div>
+
+      {/* DYNAMIC PRODUCT GRID */}
+      {loading ? (
+        <div className="text-center text-neon-blue animate-pulse font-mono uppercase mt-20 tracking-widest relative z-10">Initializing...</div>
+      ) : (
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto pb-20">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+Supabase table
+-- 1. THE FOUNDATION (Properly checking for existence first)
+CREATE TABLE IF NOT EXISTS public.products (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    name text NOT NULL, 
+    cost_price numeric NOT NULL,
+    sale_price numeric NOT NULL,
+    shipping_origin text,
+    image_url text, 
+    created_at timestamptz DEFAULT now()
+);
+
+-- 2. THE RULES (Unique Constraint)
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'unique_product_name') THEN
+        ALTER TABLE public.products ADD CONSTRAINT unique_product_name UNIQUE (name);
+    END IF;
+END $$;
+
+-- 3. THE SECURITY
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+GRANT USAGE ON SCHEMA public TO anon;
+GRANT SELECT ON TABLE public.products TO anon;
+GRANT SELECT ON TABLE public.products TO authenticated;
+
+DROP POLICY IF EXISTS "Public read products" ON public.products;
+CREATE POLICY "Public read products" ON public.products FOR SELECT TO anon USING (true);
+
+-- 4. THE DATA (Reflecting your specific photo counts and formats)
+INSERT INTO public.products (name, cost_price, sale_price, shipping_origin, image_url)
+VALUES 
+  (
+    'Vocal-Lock Isolation Shield', 28.00, 89.00, 'US', 
+    'shield/1.png, shield/2.png, shield/3.png, shield/4.png' -- <-- Fixed the missing dot here!
+  ),
+  (
+    'Pro-Artist T1 Teleprompter', 26.50, 85.00, 'US', 
+    'prompter/1.png, prompter/2.png, prompter/3.png'
+  ),
+  (
+    'Neon Guitar Note Sign', 13.27, 50.00, 'China', 
+    'neonsign/1.png, neonsign/2.png'
+  )
+ON CONFLICT (name) 
+DO UPDATE SET 
+  cost_price = EXCLUDED.cost_price,
+  sale_price = EXCLUDED.sale_price, -- Note: SQL doesn't mind lowercase, but EXCLUDED is standard!
+  shipping_origin = EXCLUDED.shipping_origin,
+  image_url = EXCLUDED.image_url;

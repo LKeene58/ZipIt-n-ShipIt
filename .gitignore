@@ -1,0 +1,38 @@
+# --- [DEPENDENCIES] ---
+node_modules/
+.pnp
+.pnp.*
+.yarn/
+/build
+/out/
+/.next/
+
+# --- [CRITICAL: SECRETS & CONFIGS] ---
+.env
+.env.*
+.config/
+.ssh/
+.cache/
+.vercel
+*.pem
+test_env.ts
+
+# --- [CRITICAL: LOGS & REPORTS] ---
+*.log
+/logs/
+/src/logs/
+full_security_report.txt
+UGI_Security_Report.txt
+audit.sh
+audit_tool.sh
+
+# --- [TYPESCRIPT & BUILD] ---
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+
+# --- [STAGING & ARCHIVES] ---
+/__archive__/
+/_archive/
+/backup/
+bg.txt
